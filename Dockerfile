@@ -1,16 +1,14 @@
-# Sample Dockerfile
 
-# Indicates that the windowsservercore image will be used as the base image.
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM microsoft/windowsservercore
 
-# Metadata indicating an image maintainer.
-LABEL maintainer="jshelton@contoso.com"
+LABEL Description="Redis" Vendor="MSOpenTech" Version="2.8"
 
-# Uses dism.exe to install the IIS role.
-RUN dism.exe /online /enable-feature /all /featurename:iis-webserver /NoRestart
+RUN powershell -Command \
+	$ErrorActionPreference = 'Stop'; \
+	Invoke-WebRequest -Method Get -Uri https://github.com/MSOpenTech/redis/releases/download/win-2.8.2400/Redis-x64-2.8.2400.zip -OutFile c:\redis.zip ; \
+	Expand-Archive -Path c:\redis.zip -DestinationPath c:\redis ; \
+	Remove-Item c:\redis.zip -Force
 
-# Creates an HTML file and adds content to this file.
-RUN echo "Hello World - Dockerfile" > c:\inetpub\wwwroot\index.html
+WORKDIR /redis
 
-# Sets a command or process that will run each time a container is run from the new image.
-CMD [ "cmd" ]
+CMD redis-server.exe
